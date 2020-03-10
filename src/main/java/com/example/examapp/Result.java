@@ -85,10 +85,10 @@ public class Result extends AppCompatActivity {
                 public void run() {
                     try {
 //                    System.out.println("trying");
-                        GMailSender sender = new GMailSender("gauravkabra240697@gmail.com",
-                                "kabraG_vU+4jzr#!@ArZrPx");
+                        GMailSender sender = new GMailSender("###@gmail.com",
+                                "pass");
                         sender.sendMail("ExamApp Result", "Result was shown on app. Reply in order to give us your valuable feedback! Thank You.",
-                                "gauravkabra240697@gmail.com", Result.email);
+                                "###@gmail.com", Result.email);
                     } catch (Exception e) {
 //                    System.out.println("caught");
                         Log.e("SendMail", e.getMessage(), e);
