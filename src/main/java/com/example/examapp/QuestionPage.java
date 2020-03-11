@@ -47,7 +47,7 @@ public class QuestionPage extends AppCompatActivity {
     int flag = 0;
     int[] marks = {0, 0, 0, 0, 0};
 
-    final int award=20, wrong=-4;
+    final int award=20, wrong=4;
     String[] userResponses = {"","","","",""};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +82,7 @@ public class QuestionPage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(rg.getCheckedRadioButtonId()==-1){
-                    Toast.makeText(QuestionPage.this, "Select an option or Press 'End Test'", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(QuestionPage.this, "Select an option or Press 'Bid Me Adieu!'", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 RadioButton rr = findViewById(rg.getCheckedRadioButtonId());
@@ -116,7 +116,8 @@ public class QuestionPage extends AppCompatActivity {
                         b.setChecked(true);
                     else if (options[flag*4 +2].equals(userResponses[flag]))
                         c.setChecked(true);
-                    else    d.setChecked(true);
+                    else if (options[flag*4 +3].equals(userResponses[flag]))
+                        d.setChecked(true);
                 }
                 if(flag < questions.length)
                 {
@@ -148,8 +149,9 @@ public class QuestionPage extends AppCompatActivity {
                     flag--;
                     // reverting marks as well
                     int ss = marks[flag];
-//                    if(ss == -1)    {score++;incorrect--;}
-//                    if(ss == 4)     {score-=4;correct--;}
+                    marks[flag] = 0;
+                    if(ss!=0 && ss==wrong)    {score+=wrong;incorrect--;}
+                    if(ss!=0 && ss==award)     {score-=award;correct--;}
                     t.setText(questions[flag]);
                     a.setText(options[flag*4]);
                     b.setText(options[flag*4 +1]);
@@ -197,7 +199,28 @@ public class QuestionPage extends AppCompatActivity {
         bt_skip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            	if(flag == questions.length)
+                    flag--;
+                userResponses[flag] = "";
+                int ss = marks[flag];
+                if(ss!=0 && ss==wrong)    {score+=wrong;incorrect--;}
+                if(ss!=0 && ss==award)     {score-=award;correct--;}
+                marks[flag] = 0;
                 flag++;
+
+                boolean notAtOriginalQuestion = false;
+                if(flag<questions.length && !userResponses[flag].equals("")){
+                    notAtOriginalQuestion = true;
+                    if (options[flag*4].equals(userResponses[flag]))
+                        a.setChecked(true);
+                    else if (options[flag*4 +1].equals(userResponses[flag]))
+                        b.setChecked(true);
+                    else if (options[flag*4 +2].equals(userResponses[flag]))
+                        c.setChecked(true);
+                    else if (options[flag*4 +3].equals(userResponses[flag]))
+                        d.setChecked(true);
+                }
+
                 if(flag < questions.length)
                 {
                     t.setText(questions[flag]);
@@ -210,7 +233,9 @@ public class QuestionPage extends AppCompatActivity {
                     bt_skip.setEnabled(false);
                     flag--;
                 }
-                System.out.println(score);
+                // System.out.println(score);
+                if(!notAtOriginalQuestion && flag != questions.length)
+                    rg.clearCheck();
             }
         });
     }
