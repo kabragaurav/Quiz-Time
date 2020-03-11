@@ -2,6 +2,7 @@ package com.example.examapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
@@ -45,8 +46,9 @@ public class QuestionPage extends AppCompatActivity {
     int correct=0, incorrect=0;
     int flag = 0;
     int[] marks = {0, 0, 0, 0, 0};
-    String[] userResponses = {"","","","",""};
 
+    final int award=20, wrong=-4;
+    String[] userResponses = {"","","","",""};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +57,9 @@ public class QuestionPage extends AppCompatActivity {
 
         // user-name
         Intent i2 = getIntent();
-        final String fullname = i2.getStringExtra("k").toUpperCase();
+        final String fullname = i2.getStringExtra("name").toUpperCase();
+        final String email = i2.getStringExtra("email");
+
 
         t = findViewById(R.id.question);
         rg = findViewById(R.id.options);
@@ -83,33 +87,36 @@ public class QuestionPage extends AppCompatActivity {
                 }
                 RadioButton rr = findViewById(rg.getCheckedRadioButtonId());
                 String ans = rr.getText().toString();
-                if(ans.equals(answers[flag]) && marks[flag]==0){
-                    score += 4;
-                    marks[flag] = 4;
+                if(ans.equals(answers[flag])){
+                    score += award;
+                    marks[flag] = award;
                     correct++;
                 }
-                if(!ans.equals(answers[flag]) && marks[flag]==0){
-                    score -= 1;
-                    marks[flag] = -1;
+                else{
+                    score -= wrong;
+                    marks[flag] = wrong;
                     incorrect++;
                 }
 
                 userResponses[flag] = ans;
                 if(flag != questions.length-1)
-                    Toast.makeText(QuestionPage.this, "Response submitted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(QuestionPage.this, "Response recorded", Toast.LENGTH_SHORT).show();
+
+
                 flag++;
 
                 boolean notAtOriginalQuestion = false;
                 if(flag<questions.length && !userResponses[flag].equals("")){
                     notAtOriginalQuestion = true;
+//                    System.out.println(options[flag*4] + " " + userResponses[flag]);
+//                    System.out.println(options[flag*4].equals(userResponses[flag]));
                     if (options[flag*4].equals(userResponses[flag]))
                         a.setChecked(true);
                     else if (options[flag*4 +1].equals(userResponses[flag]))
                         b.setChecked(true);
                     else if (options[flag*4 +2].equals(userResponses[flag]))
                         c.setChecked(true);
-                    else if (options[flag*4 +3].equals(userResponses[flag]))
-                        d.setChecked(true);
+                    else    d.setChecked(true);
                 }
                 if(flag < questions.length)
                 {
@@ -125,6 +132,7 @@ public class QuestionPage extends AppCompatActivity {
                             Toast.LENGTH_LONG).show();
                     bt.setEnabled(false);
                 }
+
                 if(!notAtOriginalQuestion && flag != questions.length)
                     rg.clearCheck();
             }
@@ -140,23 +148,31 @@ public class QuestionPage extends AppCompatActivity {
                     flag--;
                     // reverting marks as well
                     int ss = marks[flag];
-                    marks[flag] = 0;
-                    if(ss!=0 && ss==-1)    {score++;incorrect--;}
-                    if(ss!=0 && ss==4)     {score-=4;correct--;}
-                    if (options[flag*4].equals(userResponses[flag]))
-                            a.setChecked(true);
-                    else if (options[flag*4 +1].equals(userResponses[flag]))
-                        b.setChecked(true);
-                    else if (options[flag*4 +2].equals(userResponses[flag]))
-                        c.setChecked(true);
-                    else if (options[flag*4 +3].equals(userResponses[flag]))
-                        d.setChecked(true);
-
+//                    if(ss == -1)    {score++;incorrect--;}
+//                    if(ss == 4)     {score-=4;correct--;}
                     t.setText(questions[flag]);
                     a.setText(options[flag*4]);
                     b.setText(options[flag*4 +1]);
                     c.setText(options[flag*4 +2]);
                     d.setText(options[flag*4 +3]);
+//                    System.out.println(a.getText().toString() + " " + userResponses[flag]);
+//                    System.out.println(a.getText().toString().equals(userResponses[flag]));
+//                        if (options[flag*4].equals(userResponses[flag]))
+//                            a.setChecked(true);
+//                    else if (options[flag*4 +1].equals(userResponses[flag]))
+//                        b.setChecked(true);
+//                    else if (options[flag*4 +2].equals(userResponses[flag]))
+//                        c.setChecked(true);
+//                    else    d.setChecked(true);
+
+                    int count = rg.getChildCount();
+                    for (int i=0;i<count;i++) {
+                        View o = rg.getChildAt(i);
+                        RadioButton selectedAnswer =(RadioButton)o;
+                        if(selectedAnswer.getText().equals(userResponses[flag])) {
+                            selectedAnswer.setChecked(true);
+                        }
+                    }
                 }else{
                     Toast.makeText(QuestionPage.this, "No previous questions !", Toast.LENGTH_SHORT).show();
                 }
@@ -168,8 +184,11 @@ public class QuestionPage extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(QuestionPage.this, Result.class);
-                String pass = fullname + " ;;" + score + " ;;" + correct + " ;;" + incorrect;
-                i.putExtra("k", pass);
+                i.putExtra("name", fullname);
+                i.putExtra("email", email);
+                i.putExtra("score", String.valueOf(score));
+                i.putExtra("correct", String.valueOf(correct));
+                i.putExtra("incorrect", String.valueOf(incorrect));
                 startActivity(i);
             }
         });
@@ -178,26 +197,7 @@ public class QuestionPage extends AppCompatActivity {
         bt_skip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                userResponses[flag] = "";
-                int ss = marks[flag];
-                if(ss!=0 && ss==-1)    {score++;incorrect--;}
-                if(ss!=0 && ss==4)     {score-=4;correct--;}
-                marks[flag] = 0;
                 flag++;
-
-                boolean notAtOriginalQuestion = false;
-                if(flag<questions.length && !userResponses[flag].equals("")){
-                    notAtOriginalQuestion = true;
-                    if (options[flag*4].equals(userResponses[flag]))
-                        a.setChecked(true);
-                    else if (options[flag*4 +1].equals(userResponses[flag]))
-                        b.setChecked(true);
-                    else if (options[flag*4 +2].equals(userResponses[flag]))
-                        c.setChecked(true);
-                    else if (options[flag*4 +3].equals(userResponses[flag]))
-                        d.setChecked(true);
-                }
-
                 if(flag < questions.length)
                 {
                     t.setText(questions[flag]);
@@ -210,9 +210,7 @@ public class QuestionPage extends AppCompatActivity {
                     bt_skip.setEnabled(false);
                     flag--;
                 }
-//                System.out.println(score);
-                if(!notAtOriginalQuestion && flag != questions.length)
-                    rg.clearCheck();
+                System.out.println(score);
             }
         });
     }
